@@ -11,28 +11,99 @@ app.listen(port, () => {            //server starts listening for any attempts f
     console.log(`Running on port ${port}`); 
 });
 
+var board = [];
+var typeOfShip = ""
+
+var destructorCounter = 2
+var submarineCounter = 3
+var cruiserCounter = 3
+var battleshipCounter = 4
+var carrierCounter = 5
+
+var cpuDestructorCounter = 2
+var cpuSubmarineCounter = 3
+var cpuCruiserCounter = 3
+var cpuBattleshipCounter = 4
+var cpuCarrierCounter = 5
+
 var destructor = {
-    id:1,
     size:2,
     name:"destructor",
     horizontal:true,
-    destroyed:false,
-
 }
-var val = 1
-var matrix = Array(5).fill(Array(5).fill(null));
+var submarine = {
+    size:3,
+    name:"submarine",
+    horizontal:true,
+}
+var cruizer = {
+    size:3,
+    name:"cruizer",
+    horizontal:true,
+}
+var battleship = {
+    size:4,
+    name:"battleship",
+    horizontal:true,
+}
+var carrier = {
+    size:5,
+    name:"carrier",
+    horizontal:true,
+}
 
-function placeShip (x,y,ship) {
-    
-    if(!matrix[x][y] || !matrix[x+1][y] || !matrix[x+2][y]){
-        for (let i = 0; i < ship.size; i++) {
-            matrix[x][y+i] = ship.name;
+
+function createBoard() {
+    for(var i=0; i<5; i++) {
+        board[i] = [];
+        for(var j=0; j<5; j++) {
+            board[i][j] = null;
         }
-        console.log(matrix);
     }
 }
 
-//console.log(destructor.name);
-//console.log(x[1][2]);
+function placeShip (x,y,ship) {
+    if(!board[x][y] || !board[x+1][y] || !board[x+2][y]){
+        for (let i = 0; i < ship.size; i++) {
+            board[x][y+i]=ship
+        }
+        //console.log(board);
+    }
+}
+
+function shoot (x,y) {
+    console.log(destructorCounter);
+    if(board[x][y]){
+        obj=board[x][y]
+        typeOfShip = obj.name
+        board[x][y]=null
+        console.log(board);
+    }else{
+        //cambiar de turno
+    }
+}
+
+function reduceShipLife(typeOfShip){
+    if (typeOfShip ==='destructor') destructorCounter--
+    if (typeOfShip ==='submarine') submarineCounter--
+    if (typeOfShip ==='cruiser') cruiserCounter--
+    if (typeOfShip ==='battleship') battleshipCounter--
+    if (typeOfShip ==='carrier') carrierCounter--
+}
+
+function checkForWins() {
+    if ((destructorCounter + submarineCounter + cruiserCounter + battleshipCounter + carrierCounter) === 0) {
+      console.log("player 1 wins");
+    }
+    if ((cpuDestructorCounter + cpuSubmarineCounter + cpuCruiserCounter + cpuBattleshipCounter + cpuCarrierCounter) === 0) {
+        console.log("player 1 wins");
+    }
+  }
+
+createBoard();
 placeShip(2,2,destructor);
-//console.log(aa);
+shoot(2,2);
+reduceShipLife(typeOfShip);
+shoot(2,3);
+reduceShipLife(typeOfShip);
+checkForWins();
