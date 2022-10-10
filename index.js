@@ -13,7 +13,7 @@ app.listen(port, () => {
 
 var board1 = [];
 var board2 = [];
-var typeOfShip = ""
+var winner = false
 
 var destructorCounter = 2
 var submarineCounter = 3
@@ -40,7 +40,7 @@ const shipArray = [
     },
     {
         size: 3,
-        name: "cruizer",
+        name: "cruiser",
         horizontal: true,
     },
     {
@@ -69,7 +69,7 @@ function createBoard() {
 
 function isEmptyHorizontalSpace(x, y, ship, board) {
     for (let index = 0; index < ship.size; index++) {
-        if ( board[x][y + index] === [Object]) {
+        if (board[x][y + index] === [Object]) {
             return false
         }
     }
@@ -90,47 +90,52 @@ async function placeShip(ship, board) {
         for (let i = 0; i < ship.size; i++) {
             board[parseInt(positionX)][parseInt(positionY) + i] = ship
         }
-    }else{
+    } else {
         console.log("no room");
     }
+    rl.removeAllListeners();
 }
 
-function isCoordinateEmpty(x,y,board){
+function isCoordinateEmpty(x, y, board) {
     console.log(board[x][y]);
-    if(board[x][y].length === [].length){
+    if (board[x][y].length === [].length) {
         return true
-    }else{
+    } else {
         return false
     }
 }
 //parece que no esta cerrando bien las interfaces de pregunta y se acumulan los listeners averiguar para cerrarlos y reduceshiplife no corre
 
 async function shoot(board) {
-    while (checkForWins()) {
-        var rl = readline.createInterface(process.stdin, process.stdout);
-
+    var rl = readline.createInterface(process.stdin, process.stdout);
+    while (winner != true) {
+        checkForWins(rl)
         let shootX = await rl.question(`Where do you want to shoot for Position in X: `, (posx) => {
             rl.close();
         });
         let shootY = await rl.question(`Where do you want to shoot for Position in Y: `, (posy) => {
             rl.close();
         });
+        console.log(board[parseInt(shootX)][parseInt(shootY)].length != [].length);
         if (board[parseInt(shootX)][parseInt(shootY)].length != [].length) {
-            let ship = board[parseInt(shootX)][parseInt(shootY)]
-            let typeOfShip = ship.name
-            reduceShipLife(typeOfShip);
+            let ships = board[parseInt(shootX)][parseInt(shootY)]
+            console.log("8888888888888888888888");
+            console.log(ships);
+            let typeOfShip = ships.name
+            console.log(typeOfShip);
+            await reduceShipLife(typeOfShip);
+
             board[parseInt(shootX)][parseInt(shootY)] = "X"
             console.clear()
             console.table(board);
         } else {
             board[parseInt(shootX)][parseInt(shootY)] = "O"
         }
-    } 
-    return 0;
+        rl.removeAllListeners()
+    }
 }
 
-function reduceShipLife(typeOfShip) {
-    console.log(typeOfShip);
+async function reduceShipLife(typeOfShip) {
     if (typeOfShip === 'destructor') destructorCounter--
     if (typeOfShip === 'submarine') submarineCounter--
     if (typeOfShip === 'cruiser') cruiserCounter--
@@ -138,16 +143,21 @@ function reduceShipLife(typeOfShip) {
     if (typeOfShip === 'carrier') carrierCounter--
 }
 
-async function checkForWins() {
+async function checkForWins(rl) {
     if ((destructorCounter + submarineCounter + cruiserCounter + battleshipCounter + carrierCounter) === 0) {
+        winner = true
+        rl.removeAllListeners()
+        console.clear()
         console.log("player 1 wins");
-        return false
+        process.exit(0);
     }
     if ((cpuDestructorCounter + cpuSubmarineCounter + cpuCruiserCounter + cpuBattleshipCounter + cpuCarrierCounter) === 0) {
+        winner = true
+        rl.removeAllListeners()
+        console.clear()
         console.log("player 2 wins");
-        return false
+        process.exit(0);
     }
-    return true
 }
 
 var schema = {
