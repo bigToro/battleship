@@ -28,31 +28,33 @@ var cpuCruiserCounter = 3
 var cpuBattleshipCounter = 4
 var cpuCarrierCounter = 5
 
-var destructor = {
-    size: 2,
-    name: "destructor",
-    horizontal: true,
-}
-var submarine = {
-    size: 3,
-    name: "submarine",
-    horizontal: true,
-}
-var cruizer = {
-    size: 3,
-    name: "cruizer",
-    horizontal: true,
-}
-var battleship = {
-    size: 4,
-    name: "battleship",
-    horizontal: true,
-}
-var carrier = {
-    size: 5,
-    name: "carrier",
-    horizontal: true,
-}
+const shipArray = [
+    {
+        size: 2,
+        name: "destructor",
+        horizontal: true,
+    },
+    {
+        size: 3,
+        name: "submarine",
+        horizontal: true,
+    },
+    {
+        size: 3,
+        name: "cruizer",
+        horizontal: true,
+    },
+    {
+        size: 4,
+        name: "battleship",
+        horizontal: true,
+    },
+    {
+        size: 5,
+        name: "carrier",
+        horizontal: true,
+    }
+]
 
 
 function createBoard() {
@@ -60,22 +62,15 @@ function createBoard() {
     for (var i = 0; i < 10; i++) {
         board[i] = [];
         for (var j = 0; j < 10; j++) {
-            board[i][j] = [j+1];
+            board[i][j] = [];
         }
-    }
-    return board
-}
-function createBoard2() {
-    var board = []
-    for (var i = 0; i < 10; i++) {
-        board[i] = [[]];
     }
     return board
 }
 
 function isEmptyHorizontalSpace(x, y, ship, board) {
     for (let index = 0; index < ship.size; index++) {
-        if (board[x + index][y] == null) {
+        if (board[x + index][y] == []) {
             return false
         }
     }
@@ -83,23 +78,19 @@ function isEmptyHorizontalSpace(x, y, ship, board) {
 }
 
 async function placeShip(ship, board) {
+    console.log(ship.name);
+    var rl = readline.createInterface(process.stdin, process.stdout);
 
-    //const rl = readline.createInterface({ input, output });
-    var rl = readline.createInterface(
-        process.stdin, process.stdout);
-
-    let posxx = await rl.question('eje x ', (posx) => {
+    let positionX = await rl.question(`Position in X for: , ${ship.name}: `, (posx) => {
+        rl.close();
+    });
+    let positionY = await rl.question(`Position in Y for: , ${ship.name}: `, (posy) => {
         rl.close();
     });
 
-    let posyy = await rl.question('eje y ', (posy) => {
-        rl.close();
-    });
-    if (isEmptyHorizontalSpace(parseInt(posxx), parseInt(posyy), ship, board)) {
+    if (isEmptyHorizontalSpace(parseInt(positionX), parseInt(positionY), ship, board)) {
         for (let i = 0; i < ship.size; i++) {
-            console.log(parseInt(posxx),"hola");
-            console.log(parseInt(posyy),"hola");
-            board[parseInt(posxx)][parseInt(posyy) + i] = ship.name
+            board[parseInt(positionX)][parseInt(positionY) + i] = ship
         }
     }
 }
@@ -149,49 +140,17 @@ var schema = {
     }
 };
 
-function getPosX1() {
-    var rl = readline.createInterface(
-        process.stdin, process.stdout);
-
-    rl.setPrompt(`What is your age? `);
-    rl.prompt();
-    let age
-    rl.on('line', (age) => {
-        console.log(`Age received by the user: ${age}`);
-        rl.close();
-    });
-    return age
-}
-
-/* async function getPosX() {
-    const rl = readline.createInterface({ input, output });
-    try {
-        const answer = await rl.question('What is your favorite food? ');
-        return answer
-    } catch (err) {
-        console.error('Question rejected', err);
+async function populateMatrix(board) {
+    for (let index = 0; index < shipArray.length; index++) {
+        await placeShip(shipArray[index], board);
     }
-}; */
-
-async function getPosY() {
-    const readline = require('readline').createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    let names = ""
-    readline.question('choose position in x for your ship:', name => {
-        names = name
-        readline.close();
-
-    });
-    return names
 }
 
 async function execute() {
     board1 = createBoard();
-    board2 = createBoard2();
     console.table(board1);
-    await placeShip(destructor, board1);
+    //await placeShip(shipArray[0],board1)
+    await populateMatrix(board1);
     console.table(board1);
 }
 execute()
