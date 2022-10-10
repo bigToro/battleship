@@ -69,11 +69,11 @@ function createBoard() {
 
 function isEmptyHorizontalSpace(x, y, ship, board) {
     for (let index = 0; index < ship.size; index++) {
-        if (board[x][y + index] === [Object]) {
-            return false
+        if (board[x][y + index].length == [].length) {
+            return true
         }
     }
-    return true
+    return false
 }
 
 async function placeShip(ship, board) {
@@ -86,56 +86,99 @@ async function placeShip(ship, board) {
         rl.close();
     });
 
-    if (isEmptyHorizontalSpace(parseInt(positionX), parseInt(positionY), ship, board)) {
-        for (let i = 0; i < ship.size; i++) {
-            board[parseInt(positionX)][parseInt(positionY) + i] = ship
-        }
-    } else {
-        console.log("no room");
+    for (let i = 0; i < ship.size; i++) {
+        board[parseInt(positionX)][parseInt(positionY) + i] = ship
     }
+
+    //add this conditional in order to not place ships on the same spot
+    /*     if (isEmptyHorizontalSpace(parseInt(positionX), parseInt(positionY), ship, board)) {
+            for (let i = 0; i < ship.size; i++) {
+                board[parseInt(positionX)][parseInt(positionY) + i] = ship
+            }
+        } else {
+            console.log("no room");
+        } */
     rl.removeAllListeners();
 }
 
+function getRandomNumberForCpuShip(ship, board) {
+    let randomX = Math.floor(Math.random() * 10);
+    let randomY = Math.floor(Math.random() * (10 - ship.size));
+    if (isEmptyHorizontalSpace(randomX, randomY, ship, board) == true) {
+        return [randomX, randomY]
+    } else {
+        return false
+    }
+}
+
+async function placeCpuShip(ship, board) {
+    let positions = getRandomNumberForCpuShip(ship, board);
+    while (positions == false) {
+        positions = getRandomNumberForCpuShip(ship, board);
+    }
+    for (let i = 0; i < ship.size; i++) {
+        board[positions[0]][positions[1] + i] = ship;
+    }
+}
+
 function isCoordinateEmpty(x, y, board) {
-    console.log(board[x][y]);
     if (board[x][y].length === [].length) {
         return true
     } else {
         return false
     }
 }
-//parece que no esta cerrando bien las interfaces de pregunta y se acumulan los listeners averiguar para cerrarlos y reduceshiplife no corre
 
-async function shoot(board) {
-    var rl = readline.createInterface(process.stdin, process.stdout);
-    while (winner != true) {
-        checkForWins(rl)
+async function shoot(board, playerBoard, rl) {
+    //while (winner != true) {
+        //checkForWins(rl)
         let shootX = await rl.question(`Where do you want to shoot for Position in X: `, (posx) => {
             rl.close();
         });
         let shootY = await rl.question(`Where do you want to shoot for Position in Y: `, (posy) => {
             rl.close();
         });
-        console.log(board[parseInt(shootX)][parseInt(shootY)].length != [].length);
-        if (board[parseInt(shootX)][parseInt(shootY)].length != [].length) {
+        if (board[parseInt(shootX)][parseInt(shootY)].length != [].length && board[parseInt(shootX)][parseInt(shootY)] !== "X") {
             let ships = board[parseInt(shootX)][parseInt(shootY)]
-            console.log("8888888888888888888888");
-            console.log(ships);
             let typeOfShip = ships.name
-            console.log(typeOfShip);
             await reduceShipLife(typeOfShip);
-
             board[parseInt(shootX)][parseInt(shootY)] = "X"
-            console.clear()
-            console.table(board);
         } else {
             board[parseInt(shootX)][parseInt(shootY)] = "O"
         }
-        rl.removeAllListeners()
-    }
+        //await cpuShoot(playerBoard,board);
+    //}
+}
+
+async function cpuShoot(playerBoard,board) {
+    var randomPosX = Math.floor(Math.random() * 10)
+    var randomPosY = Math.floor(Math.random() * 10)
+    //while (winner != true) {
+        //checkForWins();
+        if (playerBoard[randomPosX][randomPosY].length != [].length && playerBoard[randomPosX][randomPosY] !== "X") {
+            let ship = playerBoard[randomPosX][randomPosY]
+            let typeOfShip = ship.name
+            await reducePlayerShipLife(typeOfShip);
+            playerBoard[randomPosX][randomPosY] = "X"
+            console.clear()
+            console.table(playerBoard)
+            console.table(board);
+        } else {
+            playerBoard[randomPosX][randomPosY] = "O"
+        }
+        //await shoot(board,playerBoard);
+    //}
 }
 
 async function reduceShipLife(typeOfShip) {
+    if (typeOfShip === 'destructor') cpuDestructorCounter--
+    if (typeOfShip === 'submarine') cpuSubmarineCounter--
+    if (typeOfShip === 'cruiser') cpuCruiserCounter--
+    if (typeOfShip === 'battleship') cpuBattleshipCounter--
+    if (typeOfShip === 'carrier') cpuCarrierCounter--
+}
+
+async function reducePlayerShipLife(typeOfShip) {
     if (typeOfShip === 'destructor') destructorCounter--
     if (typeOfShip === 'submarine') submarineCounter--
     if (typeOfShip === 'cruiser') cruiserCounter--
@@ -143,19 +186,20 @@ async function reduceShipLife(typeOfShip) {
     if (typeOfShip === 'carrier') carrierCounter--
 }
 
-async function checkForWins(rl) {
+async function checkForWins() {
     if ((destructorCounter + submarineCounter + cruiserCounter + battleshipCounter + carrierCounter) === 0) {
         winner = true
-        rl.removeAllListeners()
+        //rl.removeAllListeners()
         console.clear()
         console.log("player 1 wins");
         process.exit(0);
     }
+
     if ((cpuDestructorCounter + cpuSubmarineCounter + cpuCruiserCounter + cpuBattleshipCounter + cpuCarrierCounter) === 0) {
         winner = true
-        rl.removeAllListeners()
+        //rl.removeAllListeners()
         console.clear()
-        console.log("player 2 wins");
+        console.log("Cpu wins");
         process.exit(0);
     }
 }
@@ -178,17 +222,36 @@ async function populateMatrix(board) {
         await placeShip(shipArray[index], board);
     }
 }
+async function populateCpuMatrix(board) {
+    for (let index = 0; index < shipArray.length; index++) {
+        await placeCpuShip(shipArray[index], board);
+    }
+}
+
+async function playGame(board2,board1){
+    var rl = readline.createInterface(process.stdin, process.stdout);
+    while (winner != true) {
+        await shoot(board2,board1,rl);
+        rl.removeAllListeners();
+        await cpuShoot(board1,board2);
+        checkForWins();
+    }
+}
 
 async function execute() {
     board1 = createBoard();
+    board2 = createBoard();
     console.table(board1);
-    //await placeShip(shipArray[0],board1)
-    //await placeShip(shipArray[0],board1)
+
+    await populateCpuMatrix(board2)
     await populateMatrix(board1);
+
     console.clear()
     console.table(board1);
-    //console.log(isCoordinateEmpty(0,0,board1)); 
-    shoot(board1);
+    console.table(board2);
+
+    //await shoot(board2,board1);
+    await playGame(board2,board1);
 }
 execute()
 
