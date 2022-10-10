@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const port = 5000;
 const readline = require('node:readline/promises');
-const { stdin: input, stdout: output } = require('node:process');
+//const { stdin: input, stdout: output } = require('node:process');
 app.get('/', (req, res) => {
     res.sendFile('index.html', { root: __dirname });
 });
@@ -60,26 +60,46 @@ function createBoard() {
     for (var i = 0; i < 10; i++) {
         board[i] = [];
         for (var j = 0; j < 10; j++) {
-            board[i][j] = [];
+            board[i][j] = [j+1];
         }
+    }
+    return board
+}
+function createBoard2() {
+    var board = []
+    for (var i = 0; i < 10; i++) {
+        board[i] = [[]];
     }
     return board
 }
 
 function isEmptyHorizontalSpace(x, y, ship, board) {
-    console.log(x, y, ship);
     for (let index = 0; index < ship.size; index++) {
-        if (board[x + index][y] == []) {
+        if (board[x + index][y] == null) {
             return false
         }
     }
     return true
 }
 
-function placeShip(x, y, ship, board) {
-    if (isEmptyHorizontalSpace(x, y, ship)) {
+async function placeShip(ship, board) {
+
+    //const rl = readline.createInterface({ input, output });
+    var rl = readline.createInterface(
+        process.stdin, process.stdout);
+
+    let posxx = await rl.question('eje x ', (posx) => {
+        rl.close();
+    });
+
+    let posyy = await rl.question('eje y ', (posy) => {
+        rl.close();
+    });
+    if (isEmptyHorizontalSpace(parseInt(posxx), parseInt(posyy), ship, board)) {
         for (let i = 0; i < ship.size; i++) {
-            board[x][y + i] = ship
+            console.log(parseInt(posxx),"hola");
+            console.log(parseInt(posyy),"hola");
+            board[parseInt(posxx)][parseInt(posyy) + i] = ship.name
         }
     }
 }
@@ -106,13 +126,14 @@ function reduceShipLife(typeOfShip) {
     if (typeOfShip === 'carrier') carrierCounter--
 }
 
-function checkForWins() {
+async function checkForWins() {
     if ((destructorCounter + submarineCounter + cruiserCounter + battleshipCounter + carrierCounter) === 0) {
         console.log("player 1 wins");
     }
     if ((cpuDestructorCounter + cpuSubmarineCounter + cpuCruiserCounter + cpuBattleshipCounter + cpuCarrierCounter) === 0) {
         console.log("player 2 wins");
     }
+    console.log("sqqsq");
 }
 
 var schema = {
@@ -128,27 +149,21 @@ var schema = {
     }
 };
 
-async function getPosX1() {
-    /* const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    }); */
-    const rl = readline.createInterface({ input, output });
-    try {
-        const answer = await rl.question('What is you favorite food?');
-        console.log(`Oh, so your favorite food is ${answer}`);
-        return answer
-    } catch (err) {
-        console.error('Question rejected', err);
-    } finally {
-        rl.close
-    }
-};
-async function getPosX() {
-    /* const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    }); */
+function getPosX1() {
+    var rl = readline.createInterface(
+        process.stdin, process.stdout);
+
+    rl.setPrompt(`What is your age? `);
+    rl.prompt();
+    let age
+    rl.on('line', (age) => {
+        console.log(`Age received by the user: ${age}`);
+        rl.close();
+    });
+    return age
+}
+
+/* async function getPosX() {
     const rl = readline.createInterface({ input, output });
     try {
         const answer = await rl.question('What is your favorite food? ');
@@ -156,7 +171,7 @@ async function getPosX() {
     } catch (err) {
         console.error('Question rejected', err);
     }
-};
+}; */
 
 async function getPosY() {
     const readline = require('readline').createInterface({
@@ -172,20 +187,27 @@ async function getPosY() {
     return names
 }
 
-board1 = createBoard();
-board2 = createBoard();
-console.table(board1)
+async function execute() {
+    board1 = createBoard();
+    board2 = createBoard2();
+    console.table(board1);
+    await placeShip(destructor, board1);
+    console.table(board1);
+}
+execute()
 
-async function run() {
+
+/* async function run() {
     let qwq = await getPosX()
     console.log(qwq);
     return qwq
-};
+}; */
 //console.log(run());
-let xxx = run();
-console.log("dasdasd", xxx);
+//let xxx = getPosX1();
+//console.log("dasdasd", xxx);
 //let xxx1 = getPosX()
-//placeShip(xxx, xxx1, destructor, board1);
+
+//console.table(board1)
 //console.table(board1);
 /*shoot(2, 2);
 reduceShipLife(typeOfShip);
