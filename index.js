@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const port = 5000;
 const readline = require('node:readline/promises');
+
 app.get('/', (req, res) => {
     res.sendFile('index.html', { root: __dirname });
 });
@@ -11,13 +12,20 @@ app.listen(port, () => {});
 
 var board1 = [];
 var board2 = [];
+var boardToShow = [];
 var winner = false
 
-var destructorCounter, cpuDestructorCounter = 2
-var submarineCounter, cpuSubmarineCounter, cruiserCounter, cpuCruiserCounter = 3
-var battleshipCounter, cpuBattleshipCounter = 4
-var carrierCounter, cpuCarrierCounter = 5
+var destructorCounter = 2
+var submarineCounter = 3
+var cruiserCounter = 3
+var battleshipCounter = 4
+var carrierCounter = 5
 
+var cpuDestructorCounter = 2
+var cpuSubmarineCounter = 3
+var cpuCruiserCounter = 3
+var cpuBattleshipCounter = 4
+var cpuCarrierCounter = 5
 const shipArray = [
     {
         size: 2,
@@ -71,7 +79,7 @@ function isEmptyHorizontalSpace(x, y, ship, board) {
 }
 
 async function placeShip(ship, board) {
-    var rl = readline.createInterface(process.stdin, process.stdout);
+    var rl = readline.createInterface(process.stdin, process.stdout,undefined,false);
 
     let positionX = await rl.question(`Position in X for: , ${ship.name}: `, (posx) => {
         rl.close();
@@ -115,36 +123,44 @@ async function placeCpuShip(ship, board) {
     }
 }
 
-async function shoot(board, rl) {
+async function shoot(board, rl, boardToShow) {
     let shootX = await rl.question(`Where do you want to shoot for Position in X: `, (posx) => {
         rl.close();
     });
     let shootY = await rl.question(`Where do you want to shoot for Position in Y: `, (posy) => {
         rl.close();
     });
-    if (board[parseInt(shootX)][parseInt(shootY)].length != [].length && board[parseInt(shootX)][parseInt(shootY)] !== "X") {
+    if (board[parseInt(shootX)][parseInt(shootY)].size > [].length && board[parseInt(shootX)][parseInt(shootY)] != "X") {
         let ships = board[parseInt(shootX)][parseInt(shootY)]
         let typeOfShip = ships.name
+        console.log("entraaasasa");
         await reduceShipLife(typeOfShip);
         board[parseInt(shootX)][parseInt(shootY)] = "X"
+        boardToShow[parseInt(shootX)][parseInt(shootY)] = "X"
     } else {
         board[parseInt(shootX)][parseInt(shootY)] = "O"
+        boardToShow[parseInt(shootX)][parseInt(shootY)] = "O"
     }
 }
 
-async function cpuShoot(playerBoard, board) {
+async function cpuShoot(playerBoard, boardToShow, board2) {
     var randomPosX = Math.floor(Math.random() * 10)
     var randomPosY = Math.floor(Math.random() * 10)
-    if (playerBoard[randomPosX][randomPosY].length != [].length && playerBoard[randomPosX][randomPosY] !== "X") {
+    if (playerBoard[randomPosX][randomPosY].size > [].length && playerBoard[randomPosX][randomPosY] != "X") {
         let ship = playerBoard[randomPosX][randomPosY]
         let typeOfShip = ship.name
         await reducePlayerShipLife(typeOfShip);
         playerBoard[randomPosX][randomPosY] = "X"
-        console.clear()
-        console.table(playerBoard)
-        console.table(board);
+        //console.clear()
+        console.table(playerBoard);
+        console.table(board2);
+        console.table(boardToShow);
     } else {
         playerBoard[randomPosX][randomPosY] = "O"
+        //console.clear()
+        console.table(playerBoard);
+        console.table(board2);
+        console.table(boardToShow);
     }
 }
 
@@ -168,14 +184,14 @@ async function checkForWins() {
     if ((destructorCounter + submarineCounter + cruiserCounter + battleshipCounter + carrierCounter) === 0) {
         winner = true
         console.clear()
-        console.log("player 1 wins");
+        console.log("Cpu wins");
         process.exit(0);
     }
 
     if ((cpuDestructorCounter + cpuSubmarineCounter + cpuCruiserCounter + cpuBattleshipCounter + cpuCarrierCounter) === 0) {
         winner = true
         console.clear()
-        console.log("Cpu wins");
+        console.log("Player 1 wins");
         process.exit(0);
     }
 }
@@ -191,12 +207,12 @@ async function populateCpuMatrix(board) {
     }
 }
 
-async function playGame(board2, board1) {
-    var rl = readline.createInterface(process.stdin, process.stdout);
+async function playGame(board2, board1, boardToShow) {
+    var rl = readline.createInterface(process.stdin, process.stdout,undefined,false);
     while (winner != true) {
-        await shoot(board2, rl);
+        await shoot(board2, rl, boardToShow);
         rl.removeAllListeners();
-        await cpuShoot(board1, board2);
+        await cpuShoot(board1, boardToShow, board2);
         checkForWins();
     }
 }
@@ -204,15 +220,17 @@ async function playGame(board2, board1) {
 async function execute() {
     board1 = createBoard();
     board2 = createBoard();
+    boardToShow = createBoard();
     console.table(board1);
 
     await populateCpuMatrix(board2)
-    //await populateMatrix(board1);
+    await populateMatrix(board1);
 
     console.clear()
     console.table(board1);
     console.table(board2);
+    console.table(boardToShow);
 
-    //await playGame(board2, board1);
+    await playGame(board2, board1, boardToShow);
 }
 execute()
