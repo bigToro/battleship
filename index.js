@@ -7,25 +7,16 @@ app.get('/', (req, res) => {
     res.sendFile('index.html', { root: __dirname });
 });
 
-app.listen(port, () => {
-    //console.log(`Running on port ${port}`);
-});
+app.listen(port, () => {});
 
 var board1 = [];
 var board2 = [];
 var winner = false
 
-var destructorCounter = 2
-var submarineCounter = 3
-var cruiserCounter = 3
-var battleshipCounter = 4
-var carrierCounter = 5
-
-var cpuDestructorCounter = 2
-var cpuSubmarineCounter = 3
-var cpuCruiserCounter = 3
-var cpuBattleshipCounter = 4
-var cpuCarrierCounter = 5
+var destructorCounter, cpuDestructorCounter = 2
+var submarineCounter, cpuSubmarineCounter, cruiserCounter, cpuCruiserCounter = 3
+var battleshipCounter, cpuBattleshipCounter = 4
+var carrierCounter, cpuCarrierCounter = 5
 
 const shipArray = [
     {
@@ -68,12 +59,15 @@ function createBoard() {
 }
 
 function isEmptyHorizontalSpace(x, y, ship, board) {
+    let result = false
     for (let index = 0; index < ship.size; index++) {
         if (board[x][y + index].length == [].length) {
-            return true
+            result = true
+        } else {
+            result = false
         }
     }
-    return false
+    return result
 }
 
 async function placeShip(ship, board) {
@@ -121,53 +115,37 @@ async function placeCpuShip(ship, board) {
     }
 }
 
-function isCoordinateEmpty(x, y, board) {
-    if (board[x][y].length === [].length) {
-        return true
+async function shoot(board, rl) {
+    let shootX = await rl.question(`Where do you want to shoot for Position in X: `, (posx) => {
+        rl.close();
+    });
+    let shootY = await rl.question(`Where do you want to shoot for Position in Y: `, (posy) => {
+        rl.close();
+    });
+    if (board[parseInt(shootX)][parseInt(shootY)].length != [].length && board[parseInt(shootX)][parseInt(shootY)] !== "X") {
+        let ships = board[parseInt(shootX)][parseInt(shootY)]
+        let typeOfShip = ships.name
+        await reduceShipLife(typeOfShip);
+        board[parseInt(shootX)][parseInt(shootY)] = "X"
     } else {
-        return false
+        board[parseInt(shootX)][parseInt(shootY)] = "O"
     }
 }
 
-async function shoot(board, playerBoard, rl) {
-    //while (winner != true) {
-        //checkForWins(rl)
-        let shootX = await rl.question(`Where do you want to shoot for Position in X: `, (posx) => {
-            rl.close();
-        });
-        let shootY = await rl.question(`Where do you want to shoot for Position in Y: `, (posy) => {
-            rl.close();
-        });
-        if (board[parseInt(shootX)][parseInt(shootY)].length != [].length && board[parseInt(shootX)][parseInt(shootY)] !== "X") {
-            let ships = board[parseInt(shootX)][parseInt(shootY)]
-            let typeOfShip = ships.name
-            await reduceShipLife(typeOfShip);
-            board[parseInt(shootX)][parseInt(shootY)] = "X"
-        } else {
-            board[parseInt(shootX)][parseInt(shootY)] = "O"
-        }
-        //await cpuShoot(playerBoard,board);
-    //}
-}
-
-async function cpuShoot(playerBoard,board) {
+async function cpuShoot(playerBoard, board) {
     var randomPosX = Math.floor(Math.random() * 10)
     var randomPosY = Math.floor(Math.random() * 10)
-    //while (winner != true) {
-        //checkForWins();
-        if (playerBoard[randomPosX][randomPosY].length != [].length && playerBoard[randomPosX][randomPosY] !== "X") {
-            let ship = playerBoard[randomPosX][randomPosY]
-            let typeOfShip = ship.name
-            await reducePlayerShipLife(typeOfShip);
-            playerBoard[randomPosX][randomPosY] = "X"
-            console.clear()
-            console.table(playerBoard)
-            console.table(board);
-        } else {
-            playerBoard[randomPosX][randomPosY] = "O"
-        }
-        //await shoot(board,playerBoard);
-    //}
+    if (playerBoard[randomPosX][randomPosY].length != [].length && playerBoard[randomPosX][randomPosY] !== "X") {
+        let ship = playerBoard[randomPosX][randomPosY]
+        let typeOfShip = ship.name
+        await reducePlayerShipLife(typeOfShip);
+        playerBoard[randomPosX][randomPosY] = "X"
+        console.clear()
+        console.table(playerBoard)
+        console.table(board);
+    } else {
+        playerBoard[randomPosX][randomPosY] = "O"
+    }
 }
 
 async function reduceShipLife(typeOfShip) {
@@ -189,7 +167,6 @@ async function reducePlayerShipLife(typeOfShip) {
 async function checkForWins() {
     if ((destructorCounter + submarineCounter + cruiserCounter + battleshipCounter + carrierCounter) === 0) {
         winner = true
-        //rl.removeAllListeners()
         console.clear()
         console.log("player 1 wins");
         process.exit(0);
@@ -197,25 +174,11 @@ async function checkForWins() {
 
     if ((cpuDestructorCounter + cpuSubmarineCounter + cpuCruiserCounter + cpuBattleshipCounter + cpuCarrierCounter) === 0) {
         winner = true
-        //rl.removeAllListeners()
         console.clear()
         console.log("Cpu wins");
         process.exit(0);
     }
 }
-
-var schema = {
-    properties: {
-        name: {
-            pattern: /^[a-zA-Z\s\-]+$/,
-            message: 'Name must be only letters, spaces, or dashes',
-            required: true
-        },
-        password: {
-            hidden: true
-        }
-    }
-};
 
 async function populateMatrix(board) {
     for (let index = 0; index < shipArray.length; index++) {
@@ -228,12 +191,12 @@ async function populateCpuMatrix(board) {
     }
 }
 
-async function playGame(board2,board1){
+async function playGame(board2, board1) {
     var rl = readline.createInterface(process.stdin, process.stdout);
     while (winner != true) {
-        await shoot(board2,board1,rl);
+        await shoot(board2, rl);
         rl.removeAllListeners();
-        await cpuShoot(board1,board2);
+        await cpuShoot(board1, board2);
         checkForWins();
     }
 }
@@ -244,32 +207,12 @@ async function execute() {
     console.table(board1);
 
     await populateCpuMatrix(board2)
-    await populateMatrix(board1);
+    //await populateMatrix(board1);
 
     console.clear()
     console.table(board1);
     console.table(board2);
 
-    //await shoot(board2,board1);
-    await playGame(board2,board1);
+    //await playGame(board2, board1);
 }
 execute()
-
-
-/* async function run() {
-    let qwq = await getPosX()
-    console.log(qwq);
-    return qwq
-}; */
-//console.log(run());
-//let xxx = getPosX1();
-//console.log("dasdasd", xxx);
-//let xxx1 = getPosX()
-
-//console.table(board1)
-//console.table(board1);
-/*shoot(2, 2);
-reduceShipLife(typeOfShip);
-shoot(2, 3);
-reduceShipLife(typeOfShip);
-checkForWins(); */
