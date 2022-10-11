@@ -125,8 +125,8 @@ function getRandomNumberForHorizontalCpuShip(ship, board) {
 } */
 
 async function placeCpuShip(ship, board) {
-    let verticalOrHorizontal = Math.round(Math.random());
-    if (verticalOrHorizontal == 1) {
+    //let verticalOrHorizontal = Math.round(Math.random());
+    //if (verticalOrHorizontal == 1) {
         let positions = getRandomNumberForHorizontalCpuShip(ship, board);
         while (positions == false) {
             positions = getRandomNumberForHorizontalCpuShip(ship, board);
@@ -134,7 +134,7 @@ async function placeCpuShip(ship, board) {
         for (let i = 0; i < ship.size; i++) {
             board[positions[0]][positions[1] + i] = ship;
         }
-    }
+    //}
 /*     if (verticalOrHorizontal == 0) {
         let positions = getRandomNumberForVerticalCpuShip(ship, board);
         while (positions == false) {
