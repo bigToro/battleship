@@ -8,7 +8,7 @@ app.get('/', (req, res) => {
     res.sendFile('index.html', { root: __dirname });
 });
 
-app.listen(port, () => {});
+app.listen(port, () => { });
 
 var board1 = [];
 var board2 = [];
@@ -77,9 +77,20 @@ function isEmptyHorizontalSpace(x, y, ship, board) {
     }
     return result
 }
+/* function isEmptyVerticalSpace(x, y, ship, board) {
+    let result = false
+    for (let index = 0; index < ship.size; index++) {
+        if (board[x + index][y].length == [].length) {
+            result = true
+        } else {
+            result = false
+        }
+    }
+    return result
+} */
 
 async function placeShip(ship, board) {
-    var rl = readline.createInterface(process.stdin, process.stdout,undefined,false);
+    var rl = readline.createInterface(process.stdin, process.stdout, undefined, false);
 
     let positionX = await rl.question(`Position in X for: , ${ship.name}: `, (posx) => {
         rl.close();
@@ -94,7 +105,7 @@ async function placeShip(ship, board) {
     rl.removeAllListeners();
 }
 
-function getRandomNumberForCpuShip(ship, board) {
+function getRandomNumberForHorizontalCpuShip(ship, board) {
     let randomX = Math.floor(Math.random() * 10);
     let randomY = Math.floor(Math.random() * (10 - ship.size));
     if (isEmptyHorizontalSpace(randomX, randomY, ship, board) == true) {
@@ -103,15 +114,36 @@ function getRandomNumberForCpuShip(ship, board) {
         return false
     }
 }
+/* function getRandomNumberForVerticalCpuShip(ship, board) {
+    let randomX = Math.floor(Math.random() * (10 - ship.size));
+    let randomY = Math.floor(Math.random() * 10);
+    if (isEmptyVerticalSpace(randomX, randomY, ship, board) == true) {
+        return [randomX, randomY]
+    } else {
+        return false
+    }
+} */
 
 async function placeCpuShip(ship, board) {
-    let positions = getRandomNumberForCpuShip(ship, board);
-    while (positions == false) {
-        positions = getRandomNumberForCpuShip(ship, board);
+    let verticalOrHorizontal = Math.round(Math.random());
+    if (verticalOrHorizontal == 1) {
+        let positions = getRandomNumberForHorizontalCpuShip(ship, board);
+        while (positions == false) {
+            positions = getRandomNumberForHorizontalCpuShip(ship, board);
+        }
+        for (let i = 0; i < ship.size; i++) {
+            board[positions[0]][positions[1] + i] = ship;
+        }
     }
-    for (let i = 0; i < ship.size; i++) {
-        board[positions[0]][positions[1] + i] = ship;
-    }
+/*     if (verticalOrHorizontal == 0) {
+        let positions = getRandomNumberForVerticalCpuShip(ship, board);
+        while (positions == false) {
+            positions = getRandomNumberForVerticalCpuShip(ship, board);
+        }
+        for (let i = 0; i < ship.size; i++) {
+            board[positions[0]+i][positions[1]] = ship;
+        }
+    } */
 }
 
 async function shoot(board, rl, boardToShow) {
@@ -125,6 +157,12 @@ async function shoot(board, rl, boardToShow) {
         let ships = board[parseInt(shootX)][parseInt(shootY)]
         let typeOfShip = ships.name
         await reduceShipLife(typeOfShip);
+        console.log(cpuDestructorCounter);
+        console.log(cpuSubmarineCounter);
+        console.log(cpuCruiserCounter);
+        console.log(cpuBattleshipCounter);
+        console.log(cpuCarrierCounter);
+
         if (typeOfShip === 'destructor' && cpuDestructorCounter == 0) console.log("you sunk the destroyer");
         if (typeOfShip === 'submarine' && cpuSubmarineCounter == 0) console.log("you sunk the submarine");
         if (typeOfShip === 'cruiser' && cpuCruiserCounter == 0) console.log("you sunk the cruiser");
@@ -156,7 +194,7 @@ async function cpuShoot(playerBoard, boardToShow, board2) {
         //console.clear()
         console.table(playerBoard);
         console.table(board2);
-        console.table(boardToShow);
+        console.table(boardToShow); 
     }
 }
 
@@ -204,7 +242,7 @@ async function populateCpuMatrix(board) {
 }
 
 async function playGame(board2, board1, boardToShow) {
-    var rl = readline.createInterface(process.stdin, process.stdout,undefined,false);
+    var rl = readline.createInterface(process.stdin, process.stdout, undefined, false);
     while (winner != true) {
         await shoot(board2, rl, boardToShow);
         rl.removeAllListeners();
