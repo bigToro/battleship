@@ -91,15 +91,6 @@ async function placeShip(ship, board) {
     for (let i = 0; i < ship.size; i++) {
         board[parseInt(positionX)][parseInt(positionY) + i] = ship
     }
-
-    //add this conditional in order to not place ships on the same spot
-    /*     if (isEmptyHorizontalSpace(parseInt(positionX), parseInt(positionY), ship, board)) {
-            for (let i = 0; i < ship.size; i++) {
-                board[parseInt(positionX)][parseInt(positionY) + i] = ship
-            }
-        } else {
-            console.log("no room");
-        } */
     rl.removeAllListeners();
 }
 
@@ -133,8 +124,13 @@ async function shoot(board, rl, boardToShow) {
     if (board[parseInt(shootX)][parseInt(shootY)].size > [].length && board[parseInt(shootX)][parseInt(shootY)] != "X") {
         let ships = board[parseInt(shootX)][parseInt(shootY)]
         let typeOfShip = ships.name
-        console.log("entraaasasa");
         await reduceShipLife(typeOfShip);
+        if (typeOfShip === 'destructor' && cpuDestructorCounter == 0) console.log("you sunk the destroyer");
+        if (typeOfShip === 'submarine' && cpuSubmarineCounter == 0) console.log("you sunk the submarine");
+        if (typeOfShip === 'cruiser' && cpuCruiserCounter == 0) console.log("you sunk the cruiser");
+        if (typeOfShip === 'battleship' && cpuBattleshipCounter == 0) console.log("you sunk the battleship");
+        if (typeOfShip === 'carrier' && cpuCarrierCounter == 0) console.log("you sunk the carrier");
+
         board[parseInt(shootX)][parseInt(shootY)] = "X"
         boardToShow[parseInt(shootX)][parseInt(shootY)] = "X"
     } else {
