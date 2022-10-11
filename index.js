@@ -157,12 +157,6 @@ async function shoot(board, rl, boardToShow) {
         let ships = board[parseInt(shootX)][parseInt(shootY)]
         let typeOfShip = ships.name
         await reduceShipLife(typeOfShip);
-        console.log(cpuDestructorCounter);
-        console.log(cpuSubmarineCounter);
-        console.log(cpuCruiserCounter);
-        console.log(cpuBattleshipCounter);
-        console.log(cpuCarrierCounter);
-
         if (typeOfShip === 'destructor' && cpuDestructorCounter == 0) console.log("you sunk the destroyer");
         if (typeOfShip === 'submarine' && cpuSubmarineCounter == 0) console.log("you sunk the submarine");
         if (typeOfShip === 'cruiser' && cpuCruiserCounter == 0) console.log("you sunk the cruiser");
@@ -185,13 +179,13 @@ async function cpuShoot(playerBoard, boardToShow, board2) {
         let typeOfShip = ship.name
         await reducePlayerShipLife(typeOfShip);
         playerBoard[randomPosX][randomPosY] = "X"
-        //console.clear()
+        console.clear()
         console.table(playerBoard);
         console.table(board2);
         console.table(boardToShow);
     } else {
         playerBoard[randomPosX][randomPosY] = "O"
-        //console.clear()
+        console.clear()
         console.table(playerBoard);
         console.table(board2);
         console.table(boardToShow); 
